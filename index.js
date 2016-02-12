@@ -13,6 +13,9 @@ var users = [];
 // This libraly contaion information for HBS template system
 var engines = require('consolidate');
 
+//Define libraly to work with path directory
+var path = require('path');
+
 fs.readFile('users.json', {encoding: 'utf8'}, function(err, data){
 	if(err) throw err;
 
