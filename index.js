@@ -34,6 +34,7 @@ app.engine('hbs', engines.handlebars);
 app.set('views','./views');
 app.set('view engine','hbs');
 
+//Define static images
 app.use(express.static('images'));
 
 app.get('/',function(req, res){
@@ -53,8 +54,10 @@ app.get(/.*dog.*/, function(req,res,next){
 
 // Use username form url to show username in page
 app.get('/:username', function(req,res){
+	//get params from url
 	var username = req.params.username;
-	res.send(username);
+	//send paramethers to template system
+	res.render('user',{username:username});
 })
 
 app.get('/yo',function(req,res){

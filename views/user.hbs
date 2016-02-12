@@ -22,13 +22,13 @@
 </head>
 <body>
 
-  <h1>Handlebars</h1>
-  {{#each users as |user|}}
+  <h1>{{username}}</h1>
+  
   <div>
-    <img src="{{user.username}}_sm.jpg" alt="">
-    <a href="/{{user.username}}">{{user.name.full}}</a>
+   <img src="{{username}}_lg.jpg" alt=""> 
+    
   </div>
-  {{/each}}
+  
 
 </body>
 </html>
