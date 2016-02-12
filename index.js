@@ -10,6 +10,8 @@ var _=require('lodash');
 //Define empty array to put in all user from users.json file
 var users = [];
 
+// This libraly contaion information for HBS template system
+var engines = require('consolidate');
 
 fs.readFile('users.json', {encoding: 'utf8'}, function(err, data){
 	if(err) throw err;
@@ -20,8 +22,17 @@ fs.readFile('users.json', {encoding: 'utf8'}, function(err, data){
 	})
 })
 
+// If we use Jade template engine please uncoment next couple of rows
+/*
 app.set('views','./views');
 app.set('view engine','jade');
+*/
+
+// Set HBS tempalte engine
+app.engine('hbs', engines.handlebars);
+
+app.set('views','./views');
+app.set('view engine','hbs');
 
 app.get('/',function(req, res){
 	res.render('index',{users:users});
