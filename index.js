@@ -20,14 +20,11 @@ fs.readFile('users.json', {encoding: 'utf8'}, function(err, data){
 	})
 })
 
+app.set('views','./views');
+app.set('view engine','jade');
+
 app.get('/',function(req, res){
-   // This return json directly in browser
-  // res.send(JSON.stringify(users, null, 2));
-  var buffer= '';
-  users.forEach(function(user){
-  	buffer += '<a href="/' + user.username + '">' + user.name.full + '</br>';
-  })
-  res.send(buffer);
+	res.render('index',{users:users});
 })
 
 //use regular expresion to show in console only user start with big
