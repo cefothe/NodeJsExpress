@@ -1,5 +1,6 @@
 var uri = 'mongodb://localhost:27017/test';
 
+//Connect to database
 var mongoose = require('mongoose');
 mongoose.connect(uri);
 
@@ -9,13 +10,16 @@ db.once('open',function (callback){
 	console.log('db connection');
 });
 
+
+//User schema
 var userSchema = mongoose.Schema({
   username: String,
   gender: String,
   name: {
     title: String,
     first: String,
-    last: String
+    last: String,
+    full: String
   },
   location: {
     street: String,
@@ -27,6 +31,3 @@ var userSchema = mongoose.Schema({
 
 exports.User = mongoose.model('User', userSchema);
 
-exports.User.find({}, function(err,users){
-	console.log(users);
-})

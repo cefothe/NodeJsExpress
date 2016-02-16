@@ -20,6 +20,9 @@ var helpers = require('./helpers');
 
 var JSONStream = require('JSONStream');
 
+// return database connection
+var User = require('./db').User;
+
 // Set HBS tempalte engine
 app.engine('hbs', engines.handlebars);
 
@@ -37,20 +40,9 @@ app.get('/favicon.ico', function (req ,res){
 })
 
 app.get('/',function(req, res){
-	//Define empty array to put in all user from users.json file
-	  var users = []
-	  fs.readdir('users', function (err, files) {
-	  	if(err) throw err;
-	    files.forEach(function (file) {
-	      fs.readFile(path.join(__dirname, 'users', file), {encoding: 'utf8'}, function (err, data) {
-	        if(err) throw err;
-	        var user = JSON.parse(data)
-	        user.name.full = _.startCase(user.name.first + ' ' + user.name.last)
-	        users.push(user)
-	        if (users.length === files.length) res.render('index', {users: users})
-	      })
-	    })
-	  })
+	User.find({}, function(err,users){
+	  res.render('index', {users: users})
+	})
 });
 
 app.get('*.json', function(req, res){

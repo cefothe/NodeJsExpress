@@ -2,6 +2,9 @@ var express = require('express');
 var helpers = require('./helpers');
 var fs = require('fs');
 
+// return database connection
+var User = require('./db').User;
+
 var router = express.Router({
 	mergeParams:true
 });
@@ -16,13 +19,13 @@ router.use('/',function(req, res, next){
 router.get('/', function(req,res){
 	//get params from url
 	var username = req.params.username;
-	var user = helpers.getUser(username);
-
-	//send paramethers to template system
-	res.render('user',{
-		user:user,
-		address: user.location
-	});
+	User.findOne({username:username},function(err, user){
+		//send paramethers to template system
+		res.render('user',{
+			user:user,
+			address: user.location
+		});
+	})
 })
 
 //Error handaling
@@ -38,21 +41,20 @@ router.get('/edit', function(req,res){
 //Update user
 router.put('/',function(req,res){
 	var username = req.params.username;
-	var user = helpers.getUser(username);
-	user.location = req.body;
-	// Log new data
-	console.log(req.body)
-	helpers.saveUser(username, user);
-	res.end();
+
+	//Update database
+	User.findOneAndUpdate({username:username}, {location: req.body}, function(err,user){
+		res.end();
+	})
 })
 
 //Delete user
 router.delete('/',function(req,res){
-	//TODO: remove images related to user
-	var fp = helpers.getUserFilePath(req.params.username);
-	fs.unlinkSync(fp);
-	console.log("Delete user" + req.params.username);
-	res.sendStatus(200);
+	var username = req.params.username;
+	User.findOneAndRemove({username:username}, function(err){
+		console.log("Delete user" + req.params.username);
+		res.sendStatus(200);
+	});
 })
 
 module.exports = router;
