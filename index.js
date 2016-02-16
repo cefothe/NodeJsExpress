@@ -18,6 +18,8 @@ var bodyParser = require('body-parser');
 // Extract all function in difrent file
 var helpers = require('./helpers');
 
+var JSONStream = require('JSONStream');
+
 // Set HBS tempalte engine
 app.engine('hbs', engines.handlebars);
 
@@ -53,8 +55,23 @@ app.get('*.json', function(req, res){
 
 app.get('/data/:username', function(req, res){
 	var username = req.params.username;
-	var user = helpers.getUser(username);
-	res.json(user);
+	// Return stream 
+	var readable = fs.createReadStream('./users/' + username + '.json');
+	readable.pipe(res);
+});
+
+// Implement filters by gender
+app.get('/users/by/:gender', function(req,res){
+	var gender = req.params.gender;
+	var readable = fs.createReadStream('users.json');
+
+// Make filter
+	readable
+		.pipe(JSONStream.parse('*', function(user){
+			if(user.gender === gender) return user
+		}))
+		.pipe(JSONStream.stringify('[\n  ', ',\n  ', '\n]\n'))
+		.pipe(res);
 });
 
 //Error message if user doen't exist
