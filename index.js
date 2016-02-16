@@ -48,7 +48,7 @@ function verifyUser(req, res, next){
 		if(yes){
 			next();
 		}else{
-			next('route');
+			res.redirect('/error/' + req.params.username);
 		}
 	});
 }
@@ -63,8 +63,6 @@ app.use(express.static('images'));
 
 app.use(bodyParser.urlencoded({extended: true}));
 
-
-
 app.get('/',function(req, res){
 	//Define empty array to put in all user from users.json file
 	  var users = []
@@ -78,6 +76,23 @@ app.get('/',function(req, res){
 	      })
 	    })
 	  })
+});
+
+app.get('*.json', function(req, res){
+	// TODO: create a validation for user exit
+	res.download('./users/'+ req.path);
+});
+
+app.get('/data/:username', function(req, res){
+	var username = req.params.username;
+	var user = getUser(username);
+	res.json(user);
+});
+
+
+app.all('/:username', function(req, res, next){
+	console.log(req.method, 'for', req.params.username);
+	next();
 })
 
 // Use username form url to show username in page
@@ -94,8 +109,8 @@ app.get('/:username',verifyUser, function(req,res){
 	});
 })
 
-app.get('/:foo', function(req,res){
- res.send('WHOOPS');
+app.get('/error/:username', function(req,res){
+ res.send('No user named ' + req.params.username + ' found').status(404);
 });
 
 //Update user
