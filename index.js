@@ -42,6 +42,16 @@ function saveUser(username, data){
 	fs.writeFileSync(fp, JSON.stringify(data, null, 2), {encoding: 'utf8'} );
 }
 
+function verifyUser(req, res, next){
+	var fp = getUserFilePath(req.params.username);
+	fs.exists(fp, function(yes){
+		if(yes){
+			next();
+		}else{
+			next('route');
+		}
+	});
+}
 // Set HBS tempalte engine
 app.engine('hbs', engines.handlebars);
 
@@ -71,7 +81,7 @@ app.get('/',function(req, res){
 })
 
 // Use username form url to show username in page
-app.get('/:username', function(req,res){
+app.get('/:username',verifyUser, function(req,res){
 
 	//get params from url
 	var username = req.params.username;
@@ -83,6 +93,10 @@ app.get('/:username', function(req,res){
 		address: user.location
 	});
 })
+
+app.get('/:foo', function(req,res){
+ res.send('WHOOPS');
+});
 
 //Update user
 app.put('/:username',function(req,res){
