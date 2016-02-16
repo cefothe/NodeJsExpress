@@ -57,47 +57,14 @@ app.get('/data/:username', function(req, res){
 	res.json(user);
 });
 
-
-app.route('/:username')
-	.all(function(req, res, next){
-		console.log(req.method, 'for', req.params.username);
-		next();
-	})
-	.get(helpers.verifyUser, function(req,res){
-		// Use username form url to show username in page
-		//get params from url
-		var username = req.params.username;
-		var user = helpers.getUser(username);
-
-		//send paramethers to template system
-		res.render('user',{
-			user:user,
-			address: user.location
-		});
-	})
-	.put(function(req,res){
-		//Update user
-		var username = req.params.username;
-		var user = helpers.getUser(username);
-		user.location = req.body;
-		// Log new data
-		console.log(req.body)
-		helpers.saveUser(username, user);
-		res.end();
-	})
-	.delete(function(req,res){
-		//Delete user
-		//TODO: remove images related to user
-		var fp = helpers.getUserFilePath(req.params.username);
-		fs.unlinkSync(fp);
-		console.log("Delete user" + req.params.username);
-		res.sendStatus(200);
-	})
-
 //Error message if user doen't exist
 app.get('/error/:username', function(req,res){
  res.send('No user named ' + req.params.username + ' found').status(404);
 });
+
+// Use custom router to user information
+var userRouter = require('./username');
+app.use('/:username', userRouter);
 
 
 //Start express server on port 3000
