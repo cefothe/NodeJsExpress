@@ -31,6 +31,11 @@ app.use(express.static('images'));
 
 app.use(bodyParser.urlencoded({extended: true}));
 
+//Fix bug in chrome
+app.get('/favicon.ico', function (req ,res){
+	res.end();
+})
+
 app.get('/',function(req, res){
 	//Define empty array to put in all user from users.json file
 	  var users = []
