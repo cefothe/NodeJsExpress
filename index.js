@@ -15,43 +15,9 @@ var path = require('path');
 
 var bodyParser = require('body-parser');
 
+// Extract all function in difrent file
+var helpers = require('./helpers');
 
-// This function return user file which contain information from current user
-function getUserFilePath(username){
-	return path.join(__dirname,'users',username) + '.json';
-}
-
-// This function return all user data
-function getUser(username){
- var user = JSON.parse(fs.readFileSync(getUserFilePath(username), {encoding: 'utf8'}));
-
- user.name.full = _.startCase(user.name.first + ' ' +user.name.last);
- //Foreach all element in location array
- _.keys(user.location).forEach(function(key){
- 	user.location[key] = _.startCase(user.location[key]);
- });
- return user;
-}
-
-function saveUser(username, data){
-	//Log user which update your data
-	console.log(username);
-
-	var fp = getUserFilePath(username);
-	fs.unlinkSync(fp);
-	fs.writeFileSync(fp, JSON.stringify(data, null, 2), {encoding: 'utf8'} );
-}
-
-function verifyUser(req, res, next){
-	var fp = getUserFilePath(req.params.username);
-	fs.exists(fp, function(yes){
-		if(yes){
-			next();
-		}else{
-			res.redirect('/error/' + req.params.username);
-		}
-	});
-}
 // Set HBS tempalte engine
 app.engine('hbs', engines.handlebars);
 
@@ -67,8 +33,10 @@ app.get('/',function(req, res){
 	//Define empty array to put in all user from users.json file
 	  var users = []
 	  fs.readdir('users', function (err, files) {
+	  	if(err) throw err;
 	    files.forEach(function (file) {
 	      fs.readFile(path.join(__dirname, 'users', file), {encoding: 'utf8'}, function (err, data) {
+	        if(err) throw err;
 	        var user = JSON.parse(data)
 	        user.name.full = _.startCase(user.name.first + ' ' + user.name.last)
 	        users.push(user)
@@ -85,53 +53,53 @@ app.get('*.json', function(req, res){
 
 app.get('/data/:username', function(req, res){
 	var username = req.params.username;
-	var user = getUser(username);
+	var user = helpers.getUser(username);
 	res.json(user);
 });
 
 
-app.all('/:username', function(req, res, next){
-	console.log(req.method, 'for', req.params.username);
-	next();
-})
+app.route('/:username')
+	.all(function(req, res, next){
+		console.log(req.method, 'for', req.params.username);
+		next();
+	})
+	.get(helpers.verifyUser, function(req,res){
+		// Use username form url to show username in page
+		//get params from url
+		var username = req.params.username;
+		var user = helpers.getUser(username);
 
-// Use username form url to show username in page
-app.get('/:username',verifyUser, function(req,res){
+		//send paramethers to template system
+		res.render('user',{
+			user:user,
+			address: user.location
+		});
+	})
+	.put(function(req,res){
+		//Update user
+		var username = req.params.username;
+		var user = helpers.getUser(username);
+		user.location = req.body;
+		// Log new data
+		console.log(req.body)
+		helpers.saveUser(username, user);
+		res.end();
+	})
+	.delete(function(req,res){
+		//Delete user
+		//TODO: remove images related to user
+		var fp = helpers.getUserFilePath(req.params.username);
+		fs.unlinkSync(fp);
+		console.log("Delete user" + req.params.username);
+		res.sendStatus(200);
+	})
 
-	//get params from url
-	var username = req.params.username;
-	var user = getUser(username);
-
-	//send paramethers to template system
-	res.render('user',{
-		user:user,
-		address: user.location
-	});
-})
-
+//Error message if user doen't exist
 app.get('/error/:username', function(req,res){
  res.send('No user named ' + req.params.username + ' found').status(404);
 });
 
-//Update user
-app.put('/:username',function(req,res){
-	var username = req.params.username;
-	var user = getUser(username);
-	user.location = req.body;
-	// Log new data
-	console.log(req.body)
-	saveUser(username, user);
-	res.end();
-});
 
-//Delete user
-app.delete('/:username', function(req,res){
-	//TODO: remove images related to user
-	var fp = getUserFilePath(req.params.username);
-	fs.unlinkSync(fp);
-	console.log("Delete user" + req.params.username);
-	res.sendStatus(200);
-});
 //Start express server on port 3000
 var server =app.listen(3000, function(){
 	console.log('Server running at http://localhost:'+ server.address().port);
