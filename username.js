@@ -43,8 +43,17 @@ router.put('/',function(req,res){
 	var username = req.params.username;
 
 	//Update database
-	User.findOneAndUpdate({username:username}, {location: req.body}, function(err,user){
-		res.end();
+	User.findOne({username:username}, function(err,user){
+		if(err) console.error(err);
+
+		user.location = req.body.location;
+		//Use virtual property
+		user.name.full = req.body.name;
+
+		//Commit changes
+		user.save(function(){
+			res.end();
+		})
 	})
 })
 
