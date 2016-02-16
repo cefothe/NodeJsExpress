@@ -5,13 +5,15 @@ var fs = require('fs');
 var router = express.Router({
 	mergeParams:true
 });
+
 //Log which method we send
-router.all('/',function(req, res, next){
+router.use('/',function(req, res, next){
 	console.log(req.method, 'for', req.params.username);
 		next();
 });
+
 // Use username form url to show username in page
-router.get('/',helpers.verifyUser, function(req,res){
+router.get('/', function(req,res){
 	//get params from url
 	var username = req.params.username;
 	var user = helpers.getUser(username);
@@ -22,6 +24,12 @@ router.get('/',helpers.verifyUser, function(req,res){
 		address: user.location
 	});
 })
+
+//Error handaling
+router.use(function(err,req, res, next){
+	console.error(err.stack);
+	res.status(500).send('Somethink broke!');
+});
 
 router.get('/edit', function(req,res){
 	res.send('You want to edit '+ req.params.username +'???');
